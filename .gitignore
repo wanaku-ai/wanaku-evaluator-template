@@ -1,0 +1,4 @@
+/dist/
+/rust/target/
+/js/node_modules/
+/rust/src/bindings.rs

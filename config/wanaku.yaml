@@ -1,0 +1,35 @@
+# Wanaku configuration for the starter actions. See README.md.
+#
+# The container reads this file from /etc/wanaku/wanaku.yaml. Mount the
+# built actions on /data/evaluators-custom/. Do not mount a volume on /data:
+# it hides the bundled evaluators in /data/evaluators/.
+
+# Register the MCP server that the policy protects. Replace the address.
+# forwards:
+#   - name: "my-mcp-server"
+#     address: "http://host.containers.internal:9090/mcp"
+#     namespace: "default"
+
+governance:
+  default:
+    mode: enforce
+    no_match: deny
+    on_failure: deny
+  namespaces:
+    # This file has no action-policy rules. Let unmatched actions pass the
+    # action-policy filter, so that the evaluator makes the decision.
+    default:
+      no_match: allow
+
+evaluators:
+  - name: "argument-guard"
+    trigger:
+      method: "tools/call"
+      namespace: "default"
+    # The passthrough engine makes no network call. The action reads the
+    # tool name and the arguments from the evaluation context.
+    engine:
+      type: passthrough
+    processor:
+      # Use argument_guard_js.wasm for the JavaScript action.
+      path: "/data/evaluators-custom/argument_guard_rust.wasm"

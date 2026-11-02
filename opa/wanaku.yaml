@@ -1,0 +1,36 @@
+# Wanaku configuration for the OPA starter policy. See README.md.
+#
+# The OPA engine sends each tools/call to OPA. The bundled
+# opa_allow_action.wasm passes only when the decision is "allow": true.
+
+# Register the MCP server that the policy protects. Replace the address.
+# forwards:
+#   - name: "my-mcp-server"
+#     address: "http://host.containers.internal:9090/mcp"
+#     namespace: "default"
+
+governance:
+  default:
+    mode: enforce
+    no_match: deny
+    on_failure: deny
+  namespaces:
+    default:
+      no_match: allow
+
+opa_connections:
+  - name: "local-policy"
+    url: "http://host.containers.internal:8181"
+    timeout_ms: 500
+
+evaluators:
+  - name: "argument-guard-opa"
+    trigger:
+      method: "tools/call"
+      namespace: "default"
+    engine:
+      type: opa
+      connection: "local-policy"
+      decision_path: "wanaku/argument_guard/decision"
+    processor:
+      path: "/data/evaluators/opa_allow_action.wasm"

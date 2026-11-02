@@ -1,0 +1,81 @@
+name: Follow Wanaku release
+
+# Tags this repository with the version of each Wanaku release that ships an
+# evaluator bundle. The job updates the WIT contract and the CI image, commits
+# the change to main, pushes the tag vX.Y.Z, and starts CI on the tag. CI
+# publishes the .wasm files as a GitHub release when all its jobs pass.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Wanaku release tag (for example, v0.3.0). Empty selects the latest release with an evaluator bundle.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: follow-wanaku-release
+  cancel-in-progress: false
+
+jobs:
+  follow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Select the Wanaku release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ]; then
+            tag="$(gh api repos/wanaku-ai/wanaku/releases --jq '
+              [.[] | select(.prerelease | not) | select(.draft | not)
+                   | select(any(.assets[]; .name | test("^wanaku-evaluators-.*\\.tar\\.gz$")))]
+              | first | .tag_name // empty')"
+          fi
+          if [ -z "$tag" ]; then
+            echo "No Wanaku release ships an evaluator bundle yet."
+            exit 0
+          fi
+          version="${tag#v}"
+          if git rev-parse -q --verify "refs/tags/v$version" > /dev/null; then
+            echo "This repository already has the tag v$version."
+            exit 0
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Update the WIT contract and the CI image
+        if: steps.release.outputs.version
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          scripts/sync-wit.sh "$TAG"
+          sed -i "s|^\(  WANAKU_IMAGE: \).*|\1quay.io/wanaku/wanaku-server:$VERSION|" .github/workflows/ci.yml
+          sed -i "s|wanaku-server:early-access|wanaku-server:$VERSION|g" README.md
+      - name: Commit, tag and start CI
+        if: steps.release.outputs.version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Follow Wanaku $VERSION"
+          git tag "v$VERSION"
+          git push origin main "v$VERSION"
+          # A push with GITHUB_TOKEN does not start other workflows. A
+          # dispatch does.
+          gh workflow run ci.yml --ref "v$VERSION"

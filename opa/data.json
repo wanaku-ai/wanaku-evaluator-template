@@ -1,0 +1,6 @@
+{
+  "policy": {
+    "blocked_tools": ["delete_database"],
+    "forbidden_text": ["rm -rf", "drop table"]
+  }
+}

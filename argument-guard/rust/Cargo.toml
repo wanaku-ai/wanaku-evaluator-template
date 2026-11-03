@@ -14,5 +14,5 @@ wit-bindgen-rt = { version = "0.41", features = ["bitflags"] }
 package = "wanaku:argument-guard"
 
 [package.metadata.component.target]
-path = "../wit/evaluator.wit"
+path = "../../wit/evaluator.wit"
 world = "evaluator-action"

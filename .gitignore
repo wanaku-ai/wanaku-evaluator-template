@@ -1,7 +1,4 @@
 /dist/
-/rust/target/
-/js/node_modules/
-/rust/src/bindings.rs
-/safety-review/rust/target/
-/safety-review/rust/src/bindings.rs
-/safety-review/js/node_modules/
+/*/rust/target/
+/*/rust/src/bindings.rs
+/*/js/node_modules/

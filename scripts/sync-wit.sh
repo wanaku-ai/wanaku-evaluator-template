@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Updates wit/evaluator.wit and js/wanaku-actions.d.ts from a Wanaku release.
+# Updates wit/evaluator.wit and wit/wanaku-actions.d.ts from a Wanaku release.
 #
 # Usage: scripts/sync-wit.sh [release-tag]   (default: early-access)
 #
@@ -20,6 +20,6 @@ fi
 
 curl -sSfL "$url" | tar xz -C "$work" --strip-components=1
 install -m 0644 "$work/wit/evaluator.wit" "$root/wit/evaluator.wit"
-install -m 0644 "$work/sdk/js/wanaku-actions.d.ts" "$root/js/wanaku-actions.d.ts"
+install -m 0644 "$work/sdk/js/wanaku-actions.d.ts" "$root/wit/wanaku-actions.d.ts"
 echo "$tag" > "$root/wit/WANAKU_VERSION"
 echo "Updated the WIT contract from $(basename "$url") ($tag)."

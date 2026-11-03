@@ -10,7 +10,7 @@ set -euo pipefail
 
 mgmt="${1:-http://localhost:8080}"
 
-for _ in $(seq 1 30); do
+for _ in $(seq 1 120); do
     curl -sf "$mgmt/healthz" > /dev/null && break
     sleep 1
 done

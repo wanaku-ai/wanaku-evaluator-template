@@ -5,8 +5,9 @@
 //! Edit `BLOCKED_TOOLS` and `FORBIDDEN_TEXT`, or replace `decide` with your
 //! own rules.
 //!
-//! Build with `cargo component build --release --target wasm32-unknown-unknown`.
-//! That command generates `src/bindings.rs` from the WIT file. A plain
+//! Build with `cargo build-action` (an alias in `.cargo/config.toml` for
+//! `cargo component build --release --target wasm32-unknown-unknown`). That
+//! command generates `src/bindings.rs` from the WIT file. A plain
 //! `cargo build` fails until the file exists.
 
 #[allow(warnings)]

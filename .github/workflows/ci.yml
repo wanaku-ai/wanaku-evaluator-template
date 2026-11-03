@@ -33,11 +33,12 @@ jobs:
           workspaces: rust
       - name: Install cargo-component
         run: cargo install cargo-component --version "$CARGO_COMPONENT_VERSION" --locked
-      # wasm32-unknown-unknown gives a component without WASI imports.
+      # The build-action alias in .cargo/config.toml targets
+      # wasm32-unknown-unknown, which gives a component without WASI imports.
       # Policy simulation runs only such components.
       - name: Build the component
         run: |
-          cargo component build --release --locked --target wasm32-unknown-unknown
+          cargo build-action --locked
           mkdir -p ../dist
           install -m 0644 target/wasm32-unknown-unknown/release/argument_guard_action.wasm \
             ../dist/argument_guard_rust.wasm

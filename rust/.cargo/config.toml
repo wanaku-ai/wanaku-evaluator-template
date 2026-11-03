@@ -1,0 +1,6 @@
+[alias]
+# Build the evaluator action: `cargo build-action`.
+# wasm32-unknown-unknown gives a component without WASI imports, which policy
+# simulation requires. A [build] target would also apply to `cargo test`, so
+# the target is set here instead.
+build-action = "component build --release --target wasm32-unknown-unknown"

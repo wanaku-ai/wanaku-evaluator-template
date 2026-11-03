@@ -1,0 +1,61 @@
+# Wanaku configuration for the safety review example. See README.md.
+#
+# The llm engine asks a model to classify each tools/call as green, yellow
+# or red. The bundled safety_review_action.wasm blocks red, warns on yellow,
+# passes green, and rejects any other result as malformed.
+
+# Register the MCP server that the policy protects. Replace the address.
+# forwards:
+#   - name: "my-mcp-server"
+#     address: "http://host.containers.internal:9090/mcp"
+#     namespace: "default"
+
+governance:
+  default:
+    mode: enforce
+    no_match: deny
+    on_failure: deny
+  namespaces:
+    default:
+      no_match: allow
+
+# Any OpenAI-compatible endpoint works. This example uses a local Ollama.
+llm_connections:
+  - name: "local-llm"
+    model: "llama3.2"
+    url: "http://host.containers.internal:11434/v1"
+    api_key: ""
+
+evaluators:
+  - name: "safety-review"
+    trigger:
+      method: "tools/call"
+      namespace: "default"
+    engine:
+      type: llm
+      operation: classify
+      connection: "local-llm"
+      prompt: |
+        You are a strict safety reviewer for tool calls made by an AI agent.
+        Classify the tool call:
+        - green: read-only or low-impact operations
+        - yellow: writes or configuration changes
+        - red: destructive or irreversible operations, such as deleting
+          data, restarting production systems, or running shell commands
+          that remove files
+
+        Respond with ONLY a JSON object:
+        {"level": "green|yellow|red", "reason": "brief explanation"}
+      # Wanaku validates the model output against this schema and retries
+      # once with a correction prompt before it runs the action.
+      result_schema:
+        type: object
+        properties:
+          level:
+            type: string
+            enum: ["green", "yellow", "red"]
+          reason:
+            type: string
+        required: ["level", "reason"]
+    processor:
+      path: "/data/evaluators/safety_review_action.wasm"

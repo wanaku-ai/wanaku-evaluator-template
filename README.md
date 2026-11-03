@@ -12,6 +12,8 @@ The template contains the same starter policy, called *argument guard*, three ti
 
 Keep the folder for the language that you want and delete the others.
 
+The [`safety-review/`](safety-review/) folder shows a second kind of policy: an LLM reviews each tool call. It uses the bundled `safety_review_action.wasm`, so you write a prompt instead of code. See [Review calls with an LLM](#review-calls-with-an-llm).
+
 ## The starter policy
 
 The argument guard applies to `tools/call` requests:
@@ -95,6 +97,47 @@ opa run --server --addr 127.0.0.1:8181 opa/policy.rego opa/data.json
 `opa/wanaku.yaml` connects Wanaku to OPA. The evaluator queries `wanaku/argument_guard/decision`. The bundled `opa_allow_action.wasm` passes the call only when the decision is `"allow": true`. You do not build a WASM action for this variant.
 
 For a full walkthrough, see [Gate tool calls with OPA](https://github.com/wanaku-ai/wanaku/blob/main/docs/govern/gate-calls-with-opa.md).
+
+## Review calls with an LLM
+
+`safety-review/wanaku.yaml` adds an evaluator with the `llm` engine and the `classify` operation. For each `tools/call`, Wanaku sends the tool name, the arguments, and recent conversation history to the model with the prompt. The model returns a classification:
+
+```json
+{"level": "red", "reason": "deletes a production database"}
+```
+
+The bundled `/data/evaluators/safety_review_action.wasm` acts on the classification:
+
+| Level | Decision |
+|---|---|
+| `green` | Pass the call. |
+| `yellow` | Pass the call and record a warning. |
+| `red` | Block the call. |
+| Any other result | Reject the call as malformed. |
+
+The `result_schema` makes Wanaku validate the model output before the action runs. If the output does not match, Wanaku retries one time with a correction prompt.
+
+The example uses a local [Ollama](https://ollama.com) with the `llama3.2` model. To use a different model, change the `llm_connections` entry. Any OpenAI-compatible endpoint works. Set `api_key` if the endpoint needs one. You do not build a WASM action for this variant. To change what the review considers dangerous, edit the `prompt`.
+
+Start Ollama and the server:
+
+```bash
+ollama pull llama3.2
+ollama serve
+podman run --rm -p 8080:8080 -p 8081:8081 \
+  -v "$PWD/safety-review/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro,Z" \
+  quay.io/wanaku/wanaku-server:early-access
+```
+
+Check that the server loaded the evaluator:
+
+```bash
+scripts/check-config.sh
+```
+
+Policy simulation does not call LLMs, so `scripts/smoke-test.sh` cannot test this variant. CI runs `scripts/check-config.sh` instead. To see real decisions, add an MCP server to `forwards` and send tool calls through Wanaku on port 8081.
+
+To write your own action for the model output, start from `rust/` or `js/` and read the classification from `ctx.llm_result` (Rust) or `ctx.llmResult` (JavaScript).
 
 ## Run the action in Wanaku
 

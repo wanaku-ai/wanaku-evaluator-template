@@ -114,9 +114,26 @@ jobs:
         if: always()
         run: docker logs wanaku
 
+  safety-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Simulation skips LLM evaluators, so this job checks only that the
+      # server accepts the configuration and loads the bundled action.
+      - name: Start Wanaku
+        run: |
+          docker run -d --name wanaku -p 8080:8080 \
+            -v "$PWD/safety-review/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro" \
+            "$WANAKU_IMAGE"
+      - name: Check the evaluator configuration
+        run: scripts/check-config.sh
+      - name: Server log
+        if: always()
+        run: docker logs wanaku
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [smoke-test, opa]
+    needs: [smoke-test, opa, safety-review]
     runs-on: ubuntu-latest
     permissions:
       contents: write

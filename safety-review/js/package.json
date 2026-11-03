@@ -1,0 +1,14 @@
+{
+  "name": "safety-review-action",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import ./test/register.js --test 'test/*.test.js'",
+    "build": "mkdir -p ../../dist && jco componentize src/action.js --wit ../../wit/evaluator.wit --world-name evaluator-action --disable all -o ../../dist/safety_review_js.wasm"
+  },
+  "devDependencies": {
+    "@bytecodealliance/componentize-js": "0.23.0",
+    "@bytecodealliance/jco": "1.40.0"
+  }
+}

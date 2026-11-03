@@ -49,7 +49,15 @@ mkdir -p ../dist
 cp target/wasm32-unknown-unknown/release/argument_guard_action.wasm ../dist/argument_guard_rust.wasm
 ```
 
-Build for `wasm32-unknown-unknown`, not `wasm32-wasip1`. A `wasm32-wasip1` component imports WASI interfaces such as the file system, and policy simulation rejects it with `evaluator_processor_capability_unsupported`. The build generates `src/bindings.rs`, so run it before `cargo test`.
+Build for `wasm32-unknown-unknown`, not `wasm32-wasip1`. A `wasm32-wasip1` component imports WASI interfaces such as the file system, and policy simulation rejects it with `evaluator_processor_capability_unsupported`.
+
+Use `cargo component build`, not `cargo build`. `cargo component build` generates `src/bindings.rs` from the WIT file. The repository does not include this file. If you run `cargo build`, `cargo test`, or `cargo clippy` before `cargo component build`, the compiler reports this error:
+
+```text
+error[E0583]: file not found for module `bindings`
+```
+
+To correct the error, run `cargo component build --release --target wasm32-unknown-unknown` one time. Then `cargo test` and `cargo clippy` work. Run `cargo component build` again after you change the WIT file.
 
 The policy is the `decide` function in `rust/src/lib.rs`. It uses only plain data, so the unit tests do not need a WASM runtime. The `evaluate` function calls `decide` and sends the result to Wanaku.
 

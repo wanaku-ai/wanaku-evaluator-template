@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --import ./test/register.js --test 'test/*.test.js'",
-    "build": "mkdir -p ../dist && jco componentize src/action.js --wit ../wit/evaluator.wit --world-name evaluator-action --disable all -o ../dist/argument_guard_js.wasm"
+    "build": "mkdir -p ../../dist && jco componentize src/action.js --wit ../../wit/evaluator.wit --world-name evaluator-action --disable all -o ../../dist/argument_guard_js.wasm"
   },
   "devDependencies": {
     "@bytecodealliance/componentize-js": "0.23.0",

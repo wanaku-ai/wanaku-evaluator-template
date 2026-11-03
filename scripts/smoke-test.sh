@@ -4,7 +4,7 @@
 # Usage: scripts/smoke-test.sh <wasm-path-on-the-server> [management-url]
 #
 # The server must have a governance posture with `no_match: allow` for the
-# `default` namespace, as in config/wanaku.yaml. Simulation does not call
+# `default` namespace, as in argument-guard/wanaku.yaml. Simulation does not call
 # an upstream MCP server and does not change the active configuration.
 set -euo pipefail
 

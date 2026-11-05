@@ -49,9 +49,9 @@ Build your action against the WIT contract of the Wanaku version that runs it. `
 scripts/sync-wit.sh <release-tag>
 ```
 
-The script downloads `wanaku-evaluators-<version>.tar.gz` from the release. It updates `wit/evaluator.wit` and `wit/wanaku-actions.d.ts`. Then set `WANAKU_IMAGE` in `.github/workflows/ci.yml` to the image of the same release.
+The script downloads `wanaku-evaluators-<version>.tar.gz` from the release. It updates `wit/evaluator.wit`, `wit/wanaku-actions.d.ts`, and `wit/WANAKU_VERSION`. CI runs the Wanaku image that has the same version as `wit/WANAKU_VERSION`.
 
-This repository follows the Wanaku releases. The `Follow Wanaku release` workflow runs each day. When a Wanaku release ships an evaluator bundle, the workflow updates the contract and the CI image, commits the change to `main`, and pushes a tag with the same version. CI then publishes the starter actions for that tag. To run the workflow at once, start it from the **Actions** tab. You can give a release tag as input.
+This repository follows the Wanaku releases. The `Follow Wanaku release` workflow runs each day. When a Wanaku release ships an evaluator bundle, the workflow updates the contract and the image in the READMEs, commits the change to `main`, and pushes a tag with the same version. CI then publishes the starter actions for that tag. To run the workflow at once, start it from the **Actions** tab. You can give a release tag as input.
 
 Your copy of the template gets the workflow too. Delete `.github/workflows/follow-wanaku-release.yml` if you do not want automatic updates.
 

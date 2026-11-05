@@ -11,8 +11,6 @@ permissions:
   contents: read
 
 env:
-  # Keep this image in step with wit/WANAKU_VERSION.
-  WANAKU_IMAGE: quay.io/wanaku/wanaku-server:early-access
   CARGO_COMPONENT_VERSION: 0.21.1
 
 jobs:
@@ -105,7 +103,7 @@ jobs:
           docker run -d --name wanaku -p 8080:8080 \
             -v "$PWD/dist:/data/evaluators-custom:ro" \
             -v "$PWD/argument-guard/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro" \
-            "$WANAKU_IMAGE"
+            "quay.io/wanaku/wanaku-server:$(sed 's/^v//' wit/WANAKU_VERSION)"
       - name: Simulate calls through the Rust action
         run: scripts/smoke-test.sh /data/evaluators-custom/argument_guard_rust.wasm
       - name: Simulate calls through the JavaScript action
@@ -193,7 +191,7 @@ jobs:
           docker run -d --name wanaku -p 8080:8080 \
             -v "$PWD/dist:/data/evaluators-custom:ro" \
             -v "$RUNNER_TEMP/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro" \
-            "$WANAKU_IMAGE"
+            "quay.io/wanaku/wanaku-server:$(sed 's/^v//' wit/WANAKU_VERSION)"
       - name: Check the evaluator configuration
         run: scripts/check-config.sh
       - name: Server log

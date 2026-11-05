@@ -1,9 +1,11 @@
 name: Follow Wanaku release
 
 # Tags this repository with the version of each Wanaku release that ships an
-# evaluator bundle. The job updates the WIT contract and the CI image, commits
-# the change to main, pushes the tag vX.Y.Z, and starts CI on the tag. CI
-# publishes the .wasm files as a GitHub release when all its jobs pass.
+# evaluator bundle. The job updates the WIT contract and the image in the
+# READMEs, commits the change to main, pushes the tag vX.Y.Z, and starts CI on
+# the tag. CI reads the image version from wit/WANAKU_VERSION. The job must not
+# change files in .github/workflows/, because GITHUB_TOKEN cannot push them.
+# CI publishes the .wasm files as a GitHub release when all its jobs pass.
 
 on:
   schedule:
@@ -55,15 +57,14 @@ jobs:
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-      - name: Update the WIT contract and the CI image
+      - name: Update the WIT contract and the READMEs
         if: steps.release.outputs.version
         env:
           TAG: ${{ steps.release.outputs.tag }}
           VERSION: ${{ steps.release.outputs.version }}
         run: |
           scripts/sync-wit.sh "$TAG"
-          sed -i "s|^\(  WANAKU_IMAGE: \).*|\1quay.io/wanaku/wanaku-server:$VERSION|" .github/workflows/ci.yml
-          sed -i "s|wanaku-server:early-access|wanaku-server:$VERSION|g" README.md
+          sed -i "s|wanaku-server:early-access|wanaku-server:$VERSION|g" */README.md
       - name: Commit, tag and start CI
         if: steps.release.outputs.version
         env:

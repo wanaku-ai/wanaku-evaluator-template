@@ -87,7 +87,7 @@ Run these commands from the repository root. Mount the built actions on `/data/e
 podman run --rm -p 8080:8080 -p 8081:8081 \
   -v "$PWD/dist:/data/evaluators-custom:ro,Z" \
   -v "$PWD/argument-guard/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro,Z" \
-  quay.io/wanaku/wanaku-server:early-access
+  quay.io/wanaku/wanaku-server:0.3.1
 ```
 
 Run the smoke test against the server:

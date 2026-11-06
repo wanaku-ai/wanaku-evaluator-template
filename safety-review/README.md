@@ -53,7 +53,7 @@ ollama serve
 podman run --rm -p 8080:8080 -p 8081:8081 \
   -v "$PWD/dist:/data/evaluators-custom:ro,Z" \
   -v "$PWD/safety-review/wanaku.yaml:/etc/wanaku/wanaku.yaml:ro,Z" \
-  quay.io/wanaku/wanaku-server:early-access
+  quay.io/wanaku/wanaku-server:0.3.1
 ```
 
 Check that the server loaded the evaluator:

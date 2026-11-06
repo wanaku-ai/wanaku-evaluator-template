@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Wanaku release tag (for example, v0.3.0). Empty selects the latest release with an evaluator bundle.
+        description: Wanaku release tag (for example, v0.3.0 or 0.3.0). Empty selects the latest release with an evaluator bundle.
         required: false
         type: string
 
@@ -40,6 +40,10 @@ jobs:
           INPUT_TAG: ${{ inputs.tag }}
         run: |
           tag="$INPUT_TAG"
+          # Wanaku release tags start with v. Accept 0.3.1 as well as v0.3.1.
+          case "$tag" in
+            [0-9]*) tag="v$tag" ;;
+          esac
           if [ -z "$tag" ]; then
             tag="$(gh api repos/wanaku-ai/wanaku/releases --jq '
               [.[] | select(.prerelease | not) | select(.draft | not)
